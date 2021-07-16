@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
@@ -13,7 +14,25 @@ import (
 
 const (
 	Region string = "ap-northeast-1"
+
+	JpTimeZone string = "Asia/Tokyo"
+	TzOffset   int    = 9 * 60 * 60
+	DateLayout string = "2006-01-02"
 )
+
+var JpLocale = time.FixedZone(JpTimeZone, TzOffset)
+
+func beginingOfMonth() string {
+	now := time.Now()
+
+	return time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, JpLocale).Format(DateLayout)
+}
+
+func today() string {
+	now := time.Now()
+
+	return time.Date(now.Year(), now.Month(), 0, 0, 0, 0, 0, JpLocale).Format(DateLayout)
+}
 
 type MyResponse struct {
 	Message []byte `json:"message"`
@@ -21,8 +40,8 @@ type MyResponse struct {
 
 func BillingCheck(ctx context.Context) (*MyResponse, error) {
 	// Must be in YYYY-MM-DD Format
-	start := "2019-06-01"
-	end := "2019-07-01"
+	start := beginingOfMonth()
+	end := today()
 	granularity := "MONTHLY"
 	metrics := []string{"AmortizedCost"}
 
